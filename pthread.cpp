@@ -6,7 +6,7 @@
 #include<cmath>
 const int MAX_THREADS = 64;
 int thread_count;
-int m, n;
+int m , n;
 double* A;
 double* x;
 double* y;
