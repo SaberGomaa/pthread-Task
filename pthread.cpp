@@ -1,126 +1,100 @@
-
-#define HAVE_STRUCT_TIMESPEC
-#include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include<cmath>
-const int MAX_THREADS = 64;
-int thread_count;
-int m , n;
-double* A;
-double* x;
-double* y;
-
-void Usage(const char* prog_name);
-void Read_matrix(const char* prompt, double A[], int m, int n);
-void Read_vector(const char* prompt, double x[], int n);
-void Print_matrix(const char* title, double A[], int m, int n);
-void Print_vector(const char* title, double y[], double m);
-
-void* Pth_mat_vect(void* rank);
-
-int main(int argc, char* argv[]) {
-	long  thread;
-	pthread_t* thread_handles;
-
-	if (argc != 2) Usage(argv[0]);
-
-	thread_count = atoi(argv[1]);
-
-	if (thread_count <= 0 || thread_count > MAX_THREADS)
-		Usage(argv[0]);
-
-	thread_handles = (pthread_t*)malloc(thread_count * sizeof(pthread_t));
-
-	printf("Enter m and n\n");
-	scanf_s("%d%d", &m, &n);
-
-	A = (double*)malloc(m * n * sizeof(double));
-	x = (double*)malloc(n * sizeof(double));
-	y = (double*)malloc(m * sizeof(double));
-
-	Read_matrix("Enter the matrix", A, m, n);
-	Print_matrix("We read", A, m, n);
-
-	Read_vector("Enter the vector", x, n);
-	Print_vector("We read", x, n);
-
-	for (thread = 0; thread < thread_count; thread++)
-		pthread_create(&thread_handles[thread], NULL, Pth_mat_vect, (void*)thread);
-
-	for (thread = 0; thread < thread_count; thread++)
-		pthread_join(thread_handles[thread], NULL);
-
-	Print_vector("The product is", y, m);
-
-	free(A);
-	free(x);
-	free(y);
-
-	return 0;
-}
-
-
-void Usage(const char* prog_name) {
-	fprintf(stderr, "usage: %s <thread_count>\n", prog_name);
-	exit(0);
-}
-
-void Read_matrix(const char* prompt, double A[], int m, int n) {
-	int i, j;
-
-	printf("%s\n", prompt);
-	for (i = 0; i < m; i++)
-		for (j = 0; j < n; j++)
-			scanf_s("%lf", &A[i * n + j]);
-}
-
-
-void Read_vector(const char* prompt, double x[], int n) {
-	int i;
-
-	printf("%s\n", prompt);
-	for (i = 0; i < n; i++)
-		scanf_s("%lf", &x[i]);
-}
-
-
-void* Pth_mat_vect(void* rank) {
-	long my_rank = (long)rank;
-	int i, j;
-	int local_m = (m + thread_count - 1) / thread_count;
-	int my_first_row = my_rank * local_m;
-	int my_last_row = my_first_row + local_m - 1;
-
-	if (my_last_row >= m)
-		my_last_row = m - 1;
-
-	for (i = my_first_row; i <= my_last_row; i++) {
-		y[i] = 0.0;
-		for (j = 0; j < n; j++)
-			y[i] += A[i * n + j] * x[j];
-	}
-
-	return NULL;
-}
-
-
-void Print_matrix(const char* title, double A[], int m, int n) {
-	int i, j;
-
-	printf("%s\n", title);
-	for (i = 0; i < m; i++) {
-		for (j = 0; j < n; j++)
-			printf("%4.1f ", A[i * n + j]);
-		printf("\n");
-	}
-}
-
-void Print_vector(const char* title, double y[], double m) {
-	int   i;
-
-	printf("%s\n", title);
-	for (i = 0; i < m; i++)
-		printf("%4.1f ", y[i]);
-	printf("\n");
-}
+//#define HAVE_STRUCT_TIMESPEC
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <math.h>
+//#include <pthread.h>
+//
+//const int MAX_THREADS = 1024;
+//
+//long thread_count;
+//long long n;
+//double sum;
+//pthread_mutex_t mutex;
+//
+//void* Thread_sum(void* rank);
+//
+//void Get_args(int argc, char* argv[]);
+//void Usage(char* prog_name);
+//
+//int main(int argc, char* argv[]) {
+//	long       thread;
+//	pthread_t* thread_handles;
+//
+//	Get_args(argc, argv);
+//
+//	thread_handles = (pthread_t*)malloc(thread_count * sizeof(pthread_t));
+//	pthread_mutex_init(&mutex, NULL);
+//	sum = 0.0;
+//
+//	for (thread = 0; thread < thread_count; thread++)
+//		pthread_create(&thread_handles[thread], NULL,
+//			Thread_sum, (void*)thread);
+//
+//	for (thread = 0; thread < thread_count; thread++)
+//		pthread_join(thread_handles[thread], NULL);
+//
+//	sum = 4.0 * sum;
+//	printf("With n = %lld terms,\n", n);
+//	printf("   Our estimate of pi = %.15f\n", sum);
+//
+//	printf("                   pi = %.15f\n", 4.0 * atan(1.0));
+//
+//	pthread_mutex_destroy(&mutex);
+//	free(thread_handles);
+//	return 0;
+//}
+//
+//
+//void* Thread_sum(void* rank) {
+//	long my_rank = (long)rank;
+//	double factor;
+//	long long i;
+//	long long my_n = (n + thread_count )/ thread_count;
+//	long long my_first_i = my_n * my_rank;
+//	long long my_last_i = my_first_i + my_n;
+//	double my_sum = 0.0;
+//
+//	if (my_first_i % 2 == 0)
+//		factor = 1.0;
+//	else
+//		factor = -1.0;
+//
+//	for (i = my_first_i; i < my_last_i; i++, factor = -factor) {
+//		my_sum += factor / (2 * i + 1);
+//	}
+//	pthread_mutex_lock(&mutex);
+//	sum += my_sum;
+//	pthread_mutex_unlock(&mutex);
+//
+//	return NULL;
+//}
+//
+//
+//double Serial_pi(long long n) {
+//	double sum = 0.0;
+//	long long i;
+//	double factor = 1.0;
+//
+//	for (i = 0; i < n; i++, factor = -factor) {
+//		sum += factor / (2 * i + 1);
+//	}
+//	return 4.0 * sum;
+//
+//}
+//
+//void Get_args(int argc, char* argv[]) {
+//	if (argc != 3) Usage(argv[0]);
+//	thread_count = strtol(argv[1], NULL, 10);
+//	if (thread_count <= 0 || thread_count > MAX_THREADS) Usage(argv[0]);
+//	n = strtoll(argv[2], NULL, 10);
+//	if (n <= 0) Usage(argv[0]);
+//}
+//
+//
+//
+//void Usage(char* prog_name) {
+//	fprintf(stderr, "usage: %s <number of threads> <n>\n", prog_name);
+//	fprintf(stderr, "   n is the number of terms and should be >= 1\n");
+//	fprintf(stderr, "   n should be evenly divisible by the number of threads\n");
+//	exit(0);
+//}
