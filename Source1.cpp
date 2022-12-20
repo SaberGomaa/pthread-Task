@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 	printf("Enter Marks Number \n");
 	scanf_s("%d", &sz);
 
-	x = (double*)malloc(sz * sizeof(double));
+	x = (double*)malloc(sz* sizeof(double));
 	y = (double*)malloc(sz * sizeof(double));
 
 
